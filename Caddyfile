@@ -9,8 +9,8 @@
   tls {$TLS_CERT} {$TLS_KEY}
 
   # 開発で Caddy 内部 CA を使いたい場合は TLS_MODE=internal を環境変数で
-  @useInternal expression {env.TLS_MODE} == "internal"
-  tls @useInternal internal
+  # @useInternal expression {env.TLS_MODE} == "internal"
+  # tls @useInternal internal
 
   # ▼ ブラウザだけ / → /console/ にご案内（AWS CLI などは素通し）
   @rootBrowser {
