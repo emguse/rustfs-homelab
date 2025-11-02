@@ -1,0 +1,48 @@
+# Caddyfile（汎用版）
+{
+  # debug  # 必要に応じて
+}
+
+# SITE_HOST が空なら :443（すべての Host を受ける）
+{$SITE_HOST}:443 {
+  # mkcert 等の外部証明書を使う場合
+  tls {$TLS_CERT} {$TLS_KEY}
+
+  # 開発で Caddy 内部 CA を使いたい場合は TLS_MODE=internal を環境変数で
+  @useInternal expression {env.TLS_MODE} == "internal"
+  tls @useInternal internal
+
+  # ▼ ブラウザだけ / → /console/ にご案内（AWS CLI などは素通し）
+  @rootBrowser {
+    path /
+    header_regexp accept Accept (text/html)
+  }
+  redir @rootBrowser /console/
+
+  # Console（表示）
+  handle_path /console* {
+    rewrite * /rustfs/console{path}
+    reverse_proxy rustfs:9001
+  }
+  # 絶対パス参照に備え、/rustfs/console/* もそのまま 9001 へ
+  handle /rustfs/console* {
+    reverse_proxy rustfs:9001
+  }
+
+  # Console からの API 呼び出し（例: /rustfs/api/* → /api/*）
+  handle_path /rustfs/api* {
+    rewrite * /api{path}
+    reverse_proxy rustfs:9000
+  }
+  # 素の /api/* も 9000 へ
+  handle /api* {
+    reverse_proxy rustfs:9000
+  }
+
+  # 残りはすべて S3/API
+  reverse_proxy rustfs:9000
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  }
+}

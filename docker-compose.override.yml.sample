@@ -1,0 +1,10 @@
+# docker-compose.override.yml
+services:
+  caddy:
+    environment:
+      SITE_HOST: "<Your-Domain-Here>"
+      TLS_CERT: "<Your-Cert-Path-Here>"
+      TLS_KEY:  "<Your-Key-Path-Here>"
+    # 例: 自宅では 80 を閉じたい場合
+    # ports:
+    #   - "443:443"

@@ -1,0 +1,55 @@
+# docker-compose.yml
+name: rustfs-homelab
+
+services:
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: rustfs
+    restart: unless-stopped
+    networks: [internal]
+    # 直アクセスは避けて 127.0.0.1 のみに束縛（Caddy 経由で公開）
+    ports:
+      - "127.0.0.1:9000:9000"   # S3 / API
+      - "127.0.0.1:9001:9001"   # Console（有効化時）
+    environment:
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: "${RUSTFS_ACCESS_KEY}"
+      RUSTFS_SECRET_KEY: "${RUSTFS_SECRET_KEY}"
+    volumes:
+      - rustfs-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9000"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  caddy:
+    image: caddy:latest
+    container_name: rustfs-proxy
+    restart: unless-stopped
+    depends_on: [rustfs]
+    networks: [internal]
+    # 公開ポートは override 側で調整可能（既定: 443/80 を開ける）
+    ports:
+      - "443:443"
+      - "80:80"
+    environment:
+      # 空（未設定）のままでも動作。override で上書きなさって。
+      SITE_HOST: ""                 # 例: "rspi52.local" / "rustfs.lan"
+      TLS_CERT: "/certs/rustfs.crt" # 例: "./certs/rustfs.lan.crt" を /certs へ
+      TLS_KEY:  "/certs/rustfs.key"
+      # TLS_MODE: "internal"        # Caddy 内部 CA を使う場合のみ
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+      - ./certs:/certs:ro           # 既存の証明書を使う場合（任意）
+
+volumes:
+  rustfs-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  internal:
+    driver: bridge
