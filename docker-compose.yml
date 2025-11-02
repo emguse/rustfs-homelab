@@ -35,7 +35,7 @@ services:
       - "80:80"
     environment:
       # 空（未設定）のままでも動作。override で上書きなさって。
-      SITE_HOST: ""                 # 例: "rspi52.local" / "rustfs.lan"
+      SITE_HOST: ""                 # 例: "your-host.local" / "rustfs.lan"
       TLS_CERT: "/certs/rustfs.crt" # 例: "./certs/rustfs.lan.crt" を /certs へ
       TLS_KEY:  "/certs/rustfs.key"
       # TLS_MODE: "internal"        # Caddy 内部 CA を使う場合のみ
