@@ -163,7 +163,12 @@ docker volume rm rustfs-homelab_rustfs-data
 open ~/Library/Application\ Support/mkcert/rootCA.pem
 ```
 
-システム設定にて「常に信頼」として登録します。
+システム設定（キーチェーンアクセス）にて「システムデフォルトを使用」または「常に信頼」として登録します。
+
+### ブラウザ証明書の信頼化(FireFox)
+
+ゲストに証明書を持ち込みます。 (mkcertで作成されたrootCA.pem等)   
+Firefoxの設定 -> プライバシーとセキュリティ -> 証明書 -> 証明書を表示 -> 認証曲証明書 -> 読み込む -> 持ち込んだ証明書を登録する  
 
 ---
 
